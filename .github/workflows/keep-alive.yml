@@ -1,0 +1,35 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Ejecutar a las 00:00 UTC cada 2 días
+    - cron: '0 0 */2 * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hacer petición GET a Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "Error: Faltan los Secretos en GitHub (NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY)."
+            exit 1
+          fi
+          
+          echo "Haciendo Ping a $SUPABASE_URL/rest/v1/orders?select=id&limit=1"
+          
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${SUPABASE_URL}/rest/v1/orders?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}")
+            
+          if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 204 ]; then
+            echo "✅ Ping exitoso. Código de respuesta: $RESPONSE"
+            echo "La base de datos de Supabase se ha mantenido activa."
+          else
+            echo "❌ Falló el Ping. Código de respuesta: $RESPONSE"
+            exit 1
+          fi
