@@ -103,3 +103,14 @@ export async function deleteOrder(formData: FormData) {
   revalidatePath('/dashboard/pedidos')
   revalidatePath('/dashboard')
 }
+
+export async function getOccupiedTimes(date: string): Promise<string[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('orders')
+    .select('time')
+    .eq('date', date)
+    .not('status', 'eq', 'Cancelado')
+
+  return (data || []).map((o) => o.time?.substring(0, 5)).filter(Boolean) as string[]
+}

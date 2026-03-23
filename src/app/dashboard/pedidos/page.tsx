@@ -2,6 +2,7 @@ import { Plus, Minus, MapPin, Calendar, Clock, Phone } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { updateOrderStatus, deleteOrder } from './actions'
+import { formatTime } from '@/lib/utils'
 
 export default async function PedidosPage() {
   const supabase = await createClient()
@@ -67,7 +68,7 @@ export default async function PedidosPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Clock size={14} className="text-gray-400" />
-                  <span>{pedido.time}</span>
+                  <span>{formatTime(pedido.time)}</span>
                 </div>
               </div>
             </div>

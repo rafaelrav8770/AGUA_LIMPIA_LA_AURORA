@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  color-scheme: light dark;
 }
 
 @theme inline {
@@ -14,8 +15,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0f172a;
+    --foreground: #f1f5f9;
   }
 }
 
@@ -23,4 +24,185 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ===== DARK MODE ADAPTATION ===== */
+@media (prefers-color-scheme: dark) {
+
+  /* --- Backgrounds --- */
+  .bg-white {
+    background-color: #1e293b !important;
+  }
+  .bg-gray-50,
+  .bg-gray-50\/80 {
+    background-color: #0f172a !important;
+  }
+  .bg-gray-100 {
+    background-color: #1e293b !important;
+  }
+
+  /* --- Text Colors --- */
+  .text-gray-900 {
+    color: #f8fafc !important;
+  }
+  .text-gray-800 {
+    color: #f1f5f9 !important;
+  }
+  .text-gray-700 {
+    color: #e2e8f0 !important;
+  }
+  .text-gray-600 {
+    color: #cbd5e1 !important;
+  }
+  .text-gray-500 {
+    color: #94a3b8 !important;
+  }
+  .text-gray-400 {
+    color: #64748b !important;
+  }
+  .text-gray-300 {
+    color: #475569 !important;
+  }
+
+  /* --- Borders --- */
+  .border-gray-100,
+  .border-gray-200,
+  .border-gray-50 {
+    border-color: #334155 !important;
+  }
+  .border-gray-300 {
+    border-color: #475569 !important;
+  }
+  .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+  .divide-gray-50 > :not([hidden]) ~ :not([hidden]) {
+    border-color: #334155 !important;
+  }
+  .border-t.border-gray-100,
+  .border-b.border-gray-100 {
+    border-color: #334155 !important;
+  }
+  .border-dashed.border-gray-200 {
+    border-color: #475569 !important;
+  }
+
+  /* --- Form Elements --- */
+  input,
+  textarea,
+  select {
+    color: #f1f5f9 !important;
+    -webkit-text-fill-color: #f1f5f9 !important;
+    background-color: #334155 !important;
+    border-color: #475569 !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+    opacity: 1;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    background-color: #1e293b !important;
+    border-color: #3b82f6 !important;
+  }
+
+  /* --- Hover States --- */
+  .hover\:bg-gray-50:hover {
+    background-color: #1e293b !important;
+  }
+  .hover\:bg-gray-100:hover {
+    background-color: #334155 !important;
+  }
+
+  /* --- Shadows (soften for dark) --- */
+  .shadow-sm {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3) !important;
+  }
+
+  /* --- Navigation (mobile bottom bar) --- */
+  nav.bg-white {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+  }
+
+  /* --- Colored Backgrounds (lighter tints adapt) --- */
+  .bg-blue-50 {
+    background-color: #1e3a5f !important;
+  }
+  .bg-blue-100 {
+    background-color: #1e3a5f !important;
+  }
+  .bg-green-50 {
+    background-color: #14332a !important;
+  }
+  .bg-green-100 {
+    background-color: #14332a !important;
+  }
+  .bg-orange-50 {
+    background-color: #3d2814 !important;
+  }
+  .bg-orange-100 {
+    background-color: #3d2814 !important;
+  }
+  .bg-red-50 {
+    background-color: #3b1a1a !important;
+  }
+  .bg-red-100 {
+    background-color: #3b1a1a !important;
+  }
+  .bg-yellow-50,
+  .bg-yellow-100 {
+    background-color: #3d3314 !important;
+  }
+
+  .bg-red-50\/50 {
+    background-color: rgba(59, 26, 26, 0.5) !important;
+  }
+
+  /* Colored borders for dark mode */
+  .border-blue-200,
+  .border-blue-200\/50 {
+    border-color: #1e3a5f !important;
+  }
+  .border-green-200,
+  .border-green-200\/50 {
+    border-color: #14332a !important;
+  }
+  .border-orange-200,
+  .border-orange-200\/50 {
+    border-color: #3d2814 !important;
+  }
+  .border-red-200,
+  .border-red-200\/50,
+  .border-red-100\/50 {
+    border-color: #3b1a1a !important;
+  }
+  .border-dashed.border-green-200 {
+    border-color: #14332a !important;
+  }
+  .border-dashed.border-gray-200 {
+    border-color: #475569 !important;
+  }
+
+  /* --- Status Badge Dark Text Fix --- */
+  .text-blue-800 {
+    color: #93c5fd !important;
+  }
+  .text-green-800 {
+    color: #86efac !important;
+  }
+  .text-orange-800 {
+    color: #fdba74 !important;
+  }
+  .text-red-700 {
+    color: #fca5a5 !important;
+  }
+
+  /* Dashed empty states */
+  .border-dashed {
+    border-color: #475569 !important;
+  }
 }

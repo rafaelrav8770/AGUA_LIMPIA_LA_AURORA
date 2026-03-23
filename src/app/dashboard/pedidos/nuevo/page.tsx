@@ -1,12 +1,16 @@
 'use client'
 
-import { createOrder } from '../actions'
+import { createOrder, getOccupiedTimes } from '../actions'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getTimeOptions } from '@/lib/utils'
+
+const TIME_OPTIONS = getTimeOptions()
 
 export default function NuevoPedidoPage() {
   const [date, setDate] = useState('')
+  const [occupiedTimes, setOccupiedTimes] = useState<string[]>([])
 
   const setToday = () => {
     // Current date in YYYY-MM-DD local format
@@ -16,6 +20,14 @@ export default function NuevoPedidoPage() {
     const localDate = new Date(today.getTime() - (offset*60*1000))
     setDate(localDate.toISOString().split('T')[0])
   }
+
+  useEffect(() => {
+    if (date) {
+      getOccupiedTimes(date).then(setOccupiedTimes)
+    } else {
+      setOccupiedTimes([])
+    }
+  }, [date])
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto w-full">
@@ -31,17 +43,17 @@ export default function NuevoPedidoPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1">Nombre del Cliente</label>
-              <input type="text" name="client_name" required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium" placeholder="Ej. Juan Pérez" />
+              <input type="text" name="client_name" required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" placeholder="Ej. Juan Pérez" />
             </div>
             
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1">Teléfono</label>
-              <input type="tel" name="phone" className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium" placeholder="Ej. 999 123 4567" />
+              <input type="tel" name="phone" className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" placeholder="Ej. 999 123 4567" />
             </div>
 
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700 ml-1">Ubicación</label>
-              <input type="text" name="address" required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium" placeholder="Dirección de entrega" />
+              <input type="text" name="address" required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" placeholder="Dirección de entrega" />
             </div>
 
             <div className="space-y-2">
@@ -63,15 +75,15 @@ export default function NuevoPedidoPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1 mb-1 block">Hora</label>
-              <select name="time" required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-800">
+              <select name="time" required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900">
                 <option value="">Selecciona hora</option>
-                {Array.from({ length: 15 }).flatMap((_, i) => {
-                  const hour = i + 6; 
-                  const h = hour.toString().padStart(2, '0');
-                  return [
-                    <option key={`${h}:00`} value={`${h}:00`}>{`${h}:00`}</option>,
-                    <option key={`${h}:30`} value={`${h}:30`}>{`${h}:30`}</option>
-                  ];
+                {TIME_OPTIONS.map((opt) => {
+                  const isOccupied = occupiedTimes.includes(opt.value)
+                  return (
+                    <option key={opt.value} value={opt.value} disabled={isOccupied}>
+                      {opt.label}{isOccupied ? ' — Ocupado' : ''}
+                    </option>
+                  )
                 })}
               </select>
             </div>
@@ -80,13 +92,13 @@ export default function NuevoPedidoPage() {
               <label className="text-sm font-semibold text-gray-700 ml-1 mb-1 block">Precio</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
-                <input type="number" step="0.01" name="price" required className="w-full rounded-2xl border border-gray-200 pl-8 pr-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium" placeholder="0.00" />
+                <input type="number" step="0.01" name="price" required className="w-full rounded-2xl border border-gray-200 pl-8 pr-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" placeholder="0.00" />
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1 mb-1 block">Método de Pago</label>
-              <select name="payment_method" className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-800">
+              <select name="payment_method" className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900">
                 <option value="Pendiente">⏳ Pendiente</option>
                 <option value="Efectivo">💵 Efectivo</option>
                 <option value="Transferencia">💳 Transferencia</option>
@@ -95,7 +107,7 @@ export default function NuevoPedidoPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1 mb-1 block">Estado</label>
-              <select name="status" className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-800">
+              <select name="status" className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900">
                 <option value="Pendiente">🟠 Pendiente</option>
                 <option value="Entregado">🔵 Entregado</option>
                 <option value="Pagado">🟢 Pagado</option>
@@ -105,7 +117,7 @@ export default function NuevoPedidoPage() {
 
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700 ml-1 mb-1 block">Notas Adicionales</label>
-              <textarea name="notes" rows={3} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all resize-none font-medium" placeholder="Opcional..."></textarea>
+              <textarea name="notes" rows={3} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all resize-none font-medium text-gray-900" placeholder="Opcional..."></textarea>
             </div>
           </div>
 

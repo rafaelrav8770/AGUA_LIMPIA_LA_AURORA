@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { deleteOrder } from '../pedidos/actions'
+import { formatTime } from '@/lib/utils'
 
 export default async function AgendaPage() {
   const supabase = await createClient()
@@ -58,7 +59,7 @@ export default async function AgendaPage() {
           {pedidos && pedidos.map((pedido) => (
             <div key={pedido.id} className="flex flex-col sm:flex-row sm:items-center p-4 hover:bg-gray-50 transition-colors gap-3 sm:gap-0">
               <div className="w-full sm:w-24 font-bold text-gray-700 text-sm sm:text-base flex sm:block items-center gap-2">
-                <span>{pedido.time?.substring(0, 5)}</span>
+                <span>{formatTime(pedido.time)}</span>
               </div>
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
                 <div>

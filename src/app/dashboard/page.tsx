@@ -1,6 +1,7 @@
 import { Droplet, DollarSign, TrendingUp, Clock, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { formatTime } from '@/lib/utils'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -122,7 +123,7 @@ export default async function DashboardPage() {
           {proximo ? (
             <Link href="/dashboard/pedidos" className="flex justify-between items-center bg-blue-50 p-4 rounded-lg hover:bg-blue-100 transition-colors">
               <div>
-                <p className="font-bold text-blue-800 text-lg">{proximo.time?.substring(0, 5)}</p>
+                <p className="font-bold text-blue-800 text-lg">{formatTime(proximo.time)}</p>
                 <p className="font-medium text-blue-700">{proximo.client_name}</p>
                 <p className="text-sm text-blue-600">{proximo.address}</p>
               </div>
