@@ -1,96 +1,191 @@
 import { BarChart3, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 
-export default function ReportesPage() {
+export default async function ReportesPage() {
+  const supabase = await createClient()
+
+  // Fecha de hoy
+  const now = new Date()
+  const offset = now.getTimezoneOffset()
+  const localDate = new Date(now.getTime() - (offset * 60 * 1000))
+  const todayStr = localDate.toISOString().split('T')[0]
+
+  // Mes actual (primer y último día)
+  const year = localDate.getFullYear()
+  const month = localDate.getMonth()
+  const firstDay = new Date(year, month, 1).toISOString().split('T')[0]
+  const lastDay = new Date(year, month + 1, 0).toISOString().split('T')[0]
+
+  // ===== CORTE DIARIO =====
+  const { data: pedidosHoy } = await supabase.from('orders').select('*').eq('date', todayStr)
+  const { data: egresosHoy } = await supabase.from('expenses').select('*').eq('date', todayStr)
+
+  const cobradosHoy = pedidosHoy?.filter(p => p.status === 'Pagado').reduce((s, p) => s + p.price, 0) || 0
+  const fiadosHoy = pedidosHoy?.filter(p => p.status === 'Entregado').reduce((s, p) => s + p.price, 0) || 0
+  const canceladosHoy = pedidosHoy?.filter(p => p.status === 'Cancelado').reduce((s, p) => s + p.price, 0) || 0
+  const totalIngresosHoy = cobradosHoy
+  const pedidosCobradosCount = pedidosHoy?.filter(p => p.status === 'Pagado').length || 0
+  const totalEgresosHoy = egresosHoy?.reduce((s, e) => s + e.amount, 0) || 0
+  const egresosCount = egresosHoy?.length || 0
+  const utilidadHoy = totalIngresosHoy - totalEgresosHoy
+  const margenHoy = totalIngresosHoy > 0 ? ((utilidadHoy / totalIngresosHoy) * 100).toFixed(1) : '0.0'
+
+  // Desglose de egresos por categoría (hoy)
+  const egresoCategorias: Record<string, number> = {}
+  egresosHoy?.forEach(e => {
+    const cat = e.category || 'Otros'
+    egresoCategorias[cat] = (egresoCategorias[cat] || 0) + e.amount
+  })
+
+  // ===== RESUMEN MENSUAL =====
+  const { data: pedidosMes } = await supabase.from('orders').select('*').gte('date', firstDay).lte('date', lastDay)
+  const { data: egresosMes } = await supabase.from('expenses').select('*').gte('date', firstDay).lte('date', lastDay)
+
+  const cobradosMes = pedidosMes?.filter(p => p.status === 'Pagado').reduce((s, p) => s + p.price, 0) || 0
+  const fiadosMes = pedidosMes?.filter(p => p.status === 'Entregado').reduce((s, p) => s + p.price, 0) || 0
+  const totalEgresosMes = egresosMes?.reduce((s, e) => s + e.amount, 0) || 0
+  const utilidadMes = cobradosMes - totalEgresosMes
+  const totalPedidosMes = pedidosMes?.length || 0
+
+  const egresoCategMes: Record<string, number> = {}
+  egresosMes?.forEach(e => {
+    const cat = e.category || 'Otros'
+    egresoCategMes[cat] = (egresoCategMes[cat] || 0) + e.amount
+  })
+
+  const categoryColors = ['bg-blue-500', 'bg-orange-500', 'bg-green-500', 'bg-red-500', 'bg-purple-500', 'bg-yellow-500']
+
+  const mesNombre = localDate.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6 pb-24 md:pb-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Reportes Financieros</h1>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
-        <button className="px-4 py-2 text-blue-600 border-b-2 border-blue-600 font-medium">
-          Corte Diario
-        </button>
-        <button className="px-4 py-2 text-gray-500 hover:text-gray-700 font-medium">
-          Resumen Mensual
-        </button>
+      {/* === CORTE DIARIO === */}
+      <div className="mb-10">
+        <h2 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
+          📅 Corte Diario <span className="text-sm font-normal text-gray-400">({todayStr})</span>
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+          <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-green-100 p-2 rounded-lg text-green-600"><TrendingUp size={20} /></div>
+              <h3 className="font-medium text-gray-700">Total Ingresos</h3>
+            </div>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900">${totalIngresosHoy.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+            <p className="text-sm text-gray-500 mt-1">{pedidosCobradosCount} pedidos cobrados</p>
+          </div>
+
+          <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-red-100 p-2 rounded-lg text-red-600"><TrendingDown size={20} /></div>
+              <h3 className="font-medium text-gray-700">Total Egresos</h3>
+            </div>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900">${totalEgresosHoy.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+            <p className="text-sm text-gray-500 mt-1">{egresosCount} gastos registrados</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-5 sm:p-6 rounded-xl shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-white/20 p-2 rounded-lg text-white"><DollarSign size={20} /></div>
+              <h3 className="font-medium text-blue-50">Utilidad Neta</h3>
+            </div>
+            <p className="text-2xl sm:text-3xl font-bold text-white">${utilidadHoy.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+            <p className="text-sm text-blue-100 mt-1">Margen: {margenHoy}%</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 mb-4 text-gray-700">
+              <BarChart3 size={20} />
+              <h2 className="font-semibold text-lg">Desglose de Pedidos</h2>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <span className="text-green-700">Cobrados</span>
+                <span className="font-bold text-green-700">${cobradosHoy.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                <span className="text-orange-700">Fiados (pendientes de cobro)</span>
+                <span className="font-bold text-orange-700">${fiadosHoy.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                <span className="text-red-700">Cancelados</span>
+                <span className="font-bold text-red-700">${canceladosHoy.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 mb-4 text-gray-700">
+              <BarChart3 size={20} />
+              <h2 className="font-semibold text-lg">Desglose de Egresos</h2>
+            </div>
+            <div className="space-y-3">
+              {Object.entries(egresoCategorias).length > 0 ? Object.entries(egresoCategorias).map(([cat, amount], i) => (
+                <div key={cat} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${categoryColors[i % categoryColors.length]}`}></div>
+                    <span className="text-gray-600">{cat}</span>
+                  </div>
+                  <span className="font-medium">${amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                </div>
+              )) : (
+                <p className="text-sm text-gray-400 text-center py-4">Sin egresos registrados hoy</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="bg-green-100 p-2 rounded-lg text-green-600">
-              <TrendingUp size={20} />
-            </div>
-            <h3 className="font-medium text-gray-700">Total Ingresos</h3>
-          </div>
-          <p className="text-3xl font-bold text-gray-900">$4,500.00</p>
-          <p className="text-sm text-gray-500 mt-1">12 pedidos completados</p>
-        </div>
+      {/* === RESUMEN MENSUAL === */}
+      <div>
+        <h2 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2 capitalize">
+          📊 Resumen Mensual <span className="text-sm font-normal text-gray-400">({mesNombre})</span>
+        </h2>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="bg-red-100 p-2 rounded-lg text-red-600">
-              <TrendingDown size={20} />
-            </div>
-            <h3 className="font-medium text-gray-700">Total Egresos</h3>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100">
+            <p className="text-xs font-medium text-gray-500">Total Pedidos</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-800">{totalPedidosMes}</p>
           </div>
-          <p className="text-3xl font-bold text-gray-900">$800.00</p>
-          <p className="text-sm text-gray-500 mt-1">3 gastos registrados</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 bg-gradient-to-br from-blue-500 to-blue-700 text-white">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="bg-white/20 p-2 rounded-lg text-white">
-              <DollarSign size={20} />
-            </div>
-            <h3 className="font-medium text-blue-50">Utilidad Neta</h3>
+          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100">
+            <p className="text-xs font-medium text-gray-500">Cobrado</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600">${cobradosMes.toLocaleString('es-MX')}</p>
           </div>
-          <p className="text-3xl font-bold text-white">$3,700.00</p>
-          <p className="text-sm text-blue-100 mt-1">Margen: 82.2%</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-2 mb-4 text-gray-700">
-            <BarChart3 size={20} />
-            <h2 className="font-semibold text-lg">Desglose de Pedidos</h2>
+          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100">
+            <p className="text-xs font-medium text-gray-500">Fiado</p>
+            <p className="text-xl sm:text-2xl font-bold text-orange-600">${fiadosMes.toLocaleString('es-MX')}</p>
           </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-              <span className="text-gray-600">Cobrados (Efectivo/Transf.)</span>
-              <span className="font-bold text-gray-900">$4,500.00</span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-              <span className="text-orange-700">Pendientes de Cobro</span>
-              <span className="font-bold text-orange-700">$800.00</span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-              <span className="text-red-700">Cancelados</span>
-              <span className="font-bold text-red-700">$0.00</span>
-            </div>
+          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100">
+            <p className="text-xs font-medium text-gray-500">Egresos</p>
+            <p className="text-xl sm:text-2xl font-bold text-red-600">${totalEgresosMes.toLocaleString('es-MX')}</p>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-2 mb-4 text-gray-700">
-            <BarChart3 size={20} />
-            <h2 className="font-semibold text-lg">Desglose de Egresos</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-5 sm:p-6 rounded-xl shadow-sm">
+            <h3 className="font-medium text-blue-100 mb-1">Utilidad Mensual</h3>
+            <p className="text-3xl sm:text-4xl font-black">${utilidadMes.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+            <p className="text-sm text-blue-200 mt-2">Cobrado - Egresos del mes</p>
           </div>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span className="text-gray-600">Combustible</span>
-              </div>
-              <span className="font-medium">$500.00</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                <span className="text-gray-600">Mantenimiento</span>
-              </div>
-              <span className="font-medium">$300.00</span>
+
+          <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+            <h3 className="font-semibold text-gray-700 mb-3">Egresos por Categoría (Mes)</h3>
+            <div className="space-y-3">
+              {Object.entries(egresoCategMes).length > 0 ? Object.entries(egresoCategMes).map(([cat, amount], i) => (
+                <div key={cat} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${categoryColors[i % categoryColors.length]}`}></div>
+                    <span className="text-gray-600">{cat}</span>
+                  </div>
+                  <span className="font-medium">${amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                </div>
+              )) : (
+                <p className="text-sm text-gray-400 text-center py-4">Sin egresos este mes</p>
+              )}
             </div>
           </div>
         </div>
