@@ -38,7 +38,7 @@ export async function updateOrderStatus(formData: FormData) {
   const newStatus = formData.get('newStatus') as OrderStatus
   const newPaymentMethod = formData.get('newPaymentMethod') as PaymentMethod | null
 
-  const updateData: any = { status: newStatus }
+  const updateData: { status: OrderStatus; payment_method?: PaymentMethod } = { status: newStatus }
   if (newPaymentMethod) {
     updateData.payment_method = newPaymentMethod
   }
