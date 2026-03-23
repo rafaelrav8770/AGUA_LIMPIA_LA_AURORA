@@ -10,54 +10,34 @@ export default async function DashboardPage() {
   const offset = now.getTimezoneOffset()
   const localDate = new Date(now.getTime() - (offset * 60 * 1000))
   const todayStr = localDate.toISOString().split('T')[0]
-
-  // Pedidos de hoy
-  const { data: pedidosHoy } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('date', todayStr)
-
-  // Egresos de hoy
-  const { data: egresosHoy } = await supabase
-    .from('expenses')
-    .select('*')
-    .eq('date', todayStr)
-
-  // Fiados (Entregados sin pagar)
-  const { data: fiados } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('status', 'Entregado')
-    .order('date', { ascending: false })
-    .limit(5)
-
-  // Próximo pedido pendiente de hoy
   const nowTime = localDate.toTimeString().substring(0, 5)
-  const { data: proximoPedido } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('date', todayStr)
-    .eq('status', 'Pendiente')
-    .gte('time', nowTime)
-    .order('time', { ascending: true })
-    .limit(1)
+
+  // Todas las consultas en paralelo para mayor velocidad
+  const [pedidosRes, egresosRes, fiadosRes, proximoRes] = await Promise.all([
+    supabase.from('orders').select('id,price,status').eq('date', todayStr),
+    supabase.from('expenses').select('id,amount').eq('date', todayStr),
+    supabase.from('orders').select('id,client_name,address,date,price').eq('status', 'Entregado').order('date', { ascending: false }).limit(5),
+    supabase.from('orders').select('id,client_name,address,time,price').eq('date', todayStr).eq('status', 'Pendiente').gte('time', nowTime).order('time', { ascending: true }).limit(1),
+  ])
+
+  const pedidosHoy = pedidosRes.data
+  const egresosHoy = egresosRes.data
+  const fiados = fiadosRes.data
+  const proximo = proximoRes.data?.[0] || null
 
   // Calcular totales
   const totalPedidos = pedidosHoy?.length || 0
   const ingresos = pedidosHoy?.filter(p => p.status === 'Pagado').reduce((sum, p) => sum + p.price, 0) || 0
   const egresos = egresosHoy?.reduce((sum, e) => sum + e.amount, 0) || 0
   const ganancia = ingresos - egresos
-
   const totalFiados = fiados?.reduce((sum, f) => sum + f.price, 0) || 0
-
-  const proximo = proximoPedido?.[0] || null
 
   return (
     <div className="p-4 sm:p-6 pb-24 md:pb-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Resumen del Día</h1>
       
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
-        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <Link href="/dashboard/pedidos" className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md hover:border-blue-200 transition-all active:scale-[0.98]">
           <div>
             <p className="text-xs sm:text-sm font-medium text-gray-500">Pedidos Hoy</p>
             <p className="text-xl sm:text-2xl font-bold text-gray-800">{totalPedidos}</p>
@@ -65,9 +45,9 @@ export default async function DashboardPage() {
           <div className="bg-blue-100 p-2.5 sm:p-3 rounded-lg text-blue-600">
             <Droplet size={20} />
           </div>
-        </div>
+        </Link>
         
-        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <Link href="/dashboard/reportes" className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md hover:border-green-200 transition-all active:scale-[0.98]">
           <div>
             <p className="text-xs sm:text-sm font-medium text-gray-500">Ingresos Hoy</p>
             <p className="text-xl sm:text-2xl font-bold text-green-600">${ingresos.toLocaleString('es-MX')}</p>
@@ -75,9 +55,9 @@ export default async function DashboardPage() {
           <div className="bg-green-100 p-2.5 sm:p-3 rounded-lg text-green-600">
             <DollarSign size={20} />
           </div>
-        </div>
+        </Link>
         
-        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <Link href="/dashboard/egresos" className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md hover:border-red-200 transition-all active:scale-[0.98]">
           <div>
             <p className="text-xs sm:text-sm font-medium text-gray-500">Egresos Hoy</p>
             <p className="text-xl sm:text-2xl font-bold text-red-600">${egresos.toLocaleString('es-MX')}</p>
@@ -85,9 +65,9 @@ export default async function DashboardPage() {
           <div className="bg-red-100 p-2.5 sm:p-3 rounded-lg text-red-600">
             <TrendingUp size={20} className="rotate-180" />
           </div>
-        </div>
+        </Link>
 
-        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <Link href="/dashboard/reportes" className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md hover:border-blue-200 transition-all active:scale-[0.98]">
           <div>
             <p className="text-xs sm:text-sm font-medium text-gray-500">Ganancia</p>
             <p className={`text-xl sm:text-2xl font-bold ${ganancia >= 0 ? 'text-blue-600' : 'text-red-600'}`}>${ganancia.toLocaleString('es-MX')}</p>
@@ -95,7 +75,7 @@ export default async function DashboardPage() {
           <div className="bg-blue-100 p-2.5 sm:p-3 rounded-lg text-blue-600">
             <TrendingUp size={20} />
           </div>
-        </div>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -140,7 +120,7 @@ export default async function DashboardPage() {
             <h2>Próximo Pedido</h2>
           </div>
           {proximo ? (
-            <div className="flex justify-between items-center bg-blue-50 p-4 rounded-lg">
+            <Link href="/dashboard/pedidos" className="flex justify-between items-center bg-blue-50 p-4 rounded-lg hover:bg-blue-100 transition-colors">
               <div>
                 <p className="font-bold text-blue-800 text-lg">{proximo.time?.substring(0, 5)}</p>
                 <p className="font-medium text-blue-700">{proximo.client_name}</p>
@@ -149,7 +129,7 @@ export default async function DashboardPage() {
               <div className="text-right">
                 <p className="font-bold text-blue-800">${proximo.price}</p>
               </div>
-            </div>
+            </Link>
           ) : (
             <p className="text-sm text-gray-400 text-center py-4">📭 No hay más pedidos pendientes para hoy</p>
           )}
