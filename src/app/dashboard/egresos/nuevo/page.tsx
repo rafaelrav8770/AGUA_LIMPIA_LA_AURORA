@@ -1,8 +1,20 @@
+'use client'
+
 import { createExpense } from '../actions'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { useState } from 'react'
 
 export default function NuevoEgresoPage() {
+  const [date, setDate] = useState('')
+
+  const setToday = () => {
+    const today = new Date()
+    const offset = today.getTimezoneOffset()
+    const localDate = new Date(today.getTime() - (offset * 60 * 1000))
+    setDate(localDate.toISOString().split('T')[0])
+  }
+
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-6">
@@ -16,8 +28,13 @@ export default function NuevoEgresoPage() {
         <form action={createExpense} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Fecha</label>
-              <input type="date" name="date" required className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <label className="text-sm font-medium text-gray-700 flex justify-between items-center">
+                <span>Fecha</span>
+                <button type="button" onClick={setToday} className="text-[11px] font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-full transition-colors tracking-wider active:scale-95">
+                  HOY
+                </button>
+              </label>
+              <input type="date" name="date" required value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
 
             <div className="space-y-2 md:col-span-2">
