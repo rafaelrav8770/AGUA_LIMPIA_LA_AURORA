@@ -1,20 +1,13 @@
 import { BarChart3, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { getMxTodayStr, getMxMonthStartEnd } from '@/lib/utils'
 
 export default async function ReportesPage() {
   const supabase = await createClient()
 
-  // Fecha de hoy
-  const now = new Date()
-  const offset = now.getTimezoneOffset()
-  const localDate = new Date(now.getTime() - (offset * 60 * 1000))
-  const todayStr = localDate.toISOString().split('T')[0]
-
-  // Mes actual (primer y último día)
-  const year = localDate.getFullYear()
-  const month = localDate.getMonth()
-  const firstDay = new Date(year, month, 1).toISOString().split('T')[0]
-  const lastDay = new Date(year, month + 1, 0).toISOString().split('T')[0]
+  // Fecha y fechas de mes en estricto horario México
+  const todayStr = getMxTodayStr()
+  const { firstDay, lastDay, monthName: mesNombre } = getMxMonthStartEnd()
 
   // ===== CORTE DIARIO =====
   const { data: pedidosHoy } = await supabase.from('orders').select('*').eq('date', todayStr)
@@ -54,8 +47,6 @@ export default async function ReportesPage() {
   })
 
   const categoryColors = ['bg-blue-500', 'bg-orange-500', 'bg-green-500', 'bg-red-500', 'bg-purple-500', 'bg-yellow-500']
-
-  const mesNombre = localDate.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
 
   return (
     <div className="p-4 sm:p-6 pb-24 md:pb-6">

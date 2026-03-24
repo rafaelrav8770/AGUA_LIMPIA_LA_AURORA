@@ -1,16 +1,13 @@
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { deleteOrder } from '../pedidos/actions'
-import { formatTime } from '@/lib/utils'
+import { formatTime, getMxTodayStr, getMxDisplayDate } from '@/lib/utils'
 
 export default async function AgendaPage() {
   const supabase = await createClient()
   
-  // Obtener la fecha de hoy en formato YYYY-MM-DD
-  const today = new Date()
-  const offset = today.getTimezoneOffset()
-  const localDate = new Date(today.getTime() - (offset * 60 * 1000))
-  const todayStr = localDate.toISOString().split('T')[0]
+  // Fecha exacta tiempo de México
+  const todayStr = getMxTodayStr()
 
   const { data: pedidos } = await supabase
     .from('orders')
@@ -18,7 +15,7 @@ export default async function AgendaPage() {
     .eq('date', todayStr)
     .order('time', { ascending: true })
 
-  const dayLabel = localDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
+  const dayLabel = getMxDisplayDate()
 
   return (
     <div className="p-4 sm:p-6 pb-24 md:pb-6">

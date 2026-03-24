@@ -1,18 +1,15 @@
 import { Droplet, DollarSign, TrendingUp, Clock, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { formatTime } from '@/lib/utils'
+import { formatTime, getMxTodayStr, getMxNowTimeStr } from '@/lib/utils'
 import { AutoRefresh } from '@/components/AutoRefresh'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
 
-  // Fecha de hoy
-  const now = new Date()
-  const offset = now.getTimezoneOffset()
-  const localDate = new Date(now.getTime() - (offset * 60 * 1000))
-  const todayStr = localDate.toISOString().split('T')[0]
-  const nowTime = localDate.toTimeString().substring(0, 5)
+  // Fecha y hora de hoy strict MX
+  const todayStr = getMxTodayStr()
+  const nowTime = getMxNowTimeStr()
 
   // Todas las consultas en paralelo para mayor velocidad
   const [pedidosRes, egresosRes, fiadosRes, proximoRes] = await Promise.all([
