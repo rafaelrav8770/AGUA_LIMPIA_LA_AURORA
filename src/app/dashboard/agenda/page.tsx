@@ -12,6 +12,8 @@ export default async function AgendaPage({ searchParams }: PageProps) {
   const supabase = await createClient()
   const resolvedSearchParams = await searchParams
   const dateParam = typeof resolvedSearchParams?.date === 'string' ? resolvedSearchParams.date : undefined
+  const viewParam = typeof resolvedSearchParams?.view === 'string' ? resolvedSearchParams.view : 'day'
+  const isWeekView = viewParam === 'week'
   
   // Fecha exacta tiempo de México
   const todayStr = getMxTodayStr()
@@ -19,14 +21,19 @@ export default async function AgendaPage({ searchParams }: PageProps) {
 
   // Calculate prev/next dates safely
   const currentDate = new Date(currentDateStr + 'T12:00:00')
+  const daysStep = isWeekView ? 7 : 1
   
   const prevDate = new Date(currentDate)
-  prevDate.setDate(currentDate.getDate() - 1)
+  prevDate.setDate(currentDate.getDate() - daysStep)
   const prevDateStr = prevDate.toISOString().split('T')[0]
   
   const nextDate = new Date(currentDate)
-  nextDate.setDate(currentDate.getDate() + 1)
+  nextDate.setDate(currentDate.getDate() + daysStep)
   const nextDateStr = nextDate.toISOString().split('T')[0]
+
+  const endDate = new Date(currentDate)
+  endDate.setDate(currentDate.getDate() + 6)
+  const endDateStr = endDate.toISOString().split('T')[0]
 
   const displayDate = new Intl.DateTimeFormat('es-MX', {
     timeZone: 'America/Mexico_City',
@@ -34,13 +41,34 @@ export default async function AgendaPage({ searchParams }: PageProps) {
     month: 'short'
   }).format(currentDate)
 
+  const displayEndDate = new Intl.DateTimeFormat('es-MX', {
+    timeZone: 'America/Mexico_City',
+    day: 'numeric',
+    month: 'short'
+  }).format(endDate)
+
   const isToday = currentDateStr === todayStr
 
-  const { data: pedidos } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('date', currentDateStr)
-    .order('time', { ascending: true })
+  let query = supabase.from('orders').select('*')
+  
+  if (isWeekView) {
+    query = query.gte('date', currentDateStr).lte('date', endDateStr)
+      .order('date', { ascending: true })
+      .order('time', { ascending: true })
+  } else {
+    query = query.eq('date', currentDateStr)
+      .order('time', { ascending: true })
+  }
+
+  const { data: pedidos } = await query
+
+  const formatDateLabel = (dateStr: string) => {
+    return new Intl.DateTimeFormat('es-MX', {
+      timeZone: 'America/Mexico_City',
+      weekday: 'short',
+      day: 'numeric'
+    }).format(new Date(dateStr + 'T12:00:00'))
+  }
 
   return (
     <div className="p-4 sm:p-6 pb-24 md:pb-6">
@@ -49,38 +77,39 @@ export default async function AgendaPage({ searchParams }: PageProps) {
         
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <div className="flex bg-white rounded-lg shadow-sm border border-gray-200">
-            <Link href={`/dashboard/agenda?date=${currentDateStr}`} className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border-r border-gray-200 rounded-l-lg hover:bg-blue-100 transition-colors">
+            <Link href={`/dashboard/agenda?date=${currentDateStr}&view=day`} className={`px-4 py-2 text-sm font-medium border-r border-gray-200 rounded-l-lg transition-colors ${!isWeekView ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}`}>
               Día
             </Link>
-            <button className="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-50 rounded-r-lg cursor-not-allowed cursor-default" title="Próximamente">
+            <Link href={`/dashboard/agenda?date=${currentDateStr}&view=week`} className={`px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${isWeekView ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}`}>
               Semana
-            </button>
+            </Link>
           </div>
           
           <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-            <Link href={`/dashboard/agenda?date=${prevDateStr}`} className="p-1 hover:bg-gray-100 rounded transition-colors flex items-center justify-center">
+            <Link href={`/dashboard/agenda?date=${prevDateStr}&view=${viewParam}`} className="p-1 hover:bg-gray-100 rounded transition-colors flex items-center justify-center">
               <ChevronLeft size={20} className="text-gray-600" />
             </Link>
-            <div className="flex items-center gap-2 px-2 font-medium text-gray-700 min-w-[120px] justify-center">
-              <CalendarIcon size={18} />
-              <span className="capitalize">{isToday ? `Hoy, ${displayDate}` : displayDate}</span>
+            <div className="flex items-center gap-2 px-2 font-medium text-gray-700 min-w-[120px] justify-center text-sm sm:text-base">
+              <CalendarIcon size={18} className="flex-shrink-0" />
+              <span className="capitalize">{isWeekView ? `${displayDate} - ${displayEndDate}` : (isToday ? `Hoy, ${displayDate}` : displayDate)}</span>
             </div>
-            <Link href={`/dashboard/agenda?date=${nextDateStr}`} className="p-1 hover:bg-gray-100 rounded transition-colors flex items-center justify-center">
+            <Link href={`/dashboard/agenda?date=${nextDateStr}&view=${viewParam}`} className="p-1 hover:bg-gray-100 rounded transition-colors flex items-center justify-center">
               <ChevronRight size={20} className="text-gray-600" />
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Lista del Día */}
+      {/* Lista del Día/Semana */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 bg-gray-50">
-          <h2 className="font-semibold text-gray-700">Entregas Programadas</h2>
+          <h2 className="font-semibold text-gray-700">{isWeekView ? 'Entregas de la Semana' : 'Entregas Programadas'}</h2>
         </div>
         <div className="divide-y divide-gray-100">
           {pedidos && pedidos.map((pedido) => (
             <div key={pedido.id} className="flex flex-col sm:flex-row sm:items-center p-4 hover:bg-gray-50 transition-colors gap-3 sm:gap-0">
-              <div className="w-full sm:w-24 font-bold text-gray-700 text-sm sm:text-base flex sm:block items-center gap-2">
+              <div className="w-full sm:w-32 font-bold text-gray-700 text-sm sm:text-base flex flex-col justify-center sm:block">
+                {isWeekView && <span className="text-xs text-blue-600 font-bold uppercase block mb-0.5">{formatDateLabel(pedido.date)}</span>}
                 <span>{formatTime(pedido.time)}</span>
               </div>
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
@@ -116,7 +145,7 @@ export default async function AgendaPage({ searchParams }: PageProps) {
           {(!pedidos || pedidos.length === 0) && (
             <div className="p-8 text-center text-gray-500">
               <span className="text-3xl block mb-2">📭</span>
-              <p className="font-medium">No hay entregas programadas para hoy.</p>
+              <p className="font-medium">{isWeekView ? 'No hay entregas programadas para esta semana.' : 'No hay entregas programadas para hoy.'}</p>
             </div>
           )}
         </div>
