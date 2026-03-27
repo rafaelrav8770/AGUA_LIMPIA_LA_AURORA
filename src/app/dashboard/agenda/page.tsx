@@ -1,21 +1,46 @@
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { deleteOrder } from '../pedidos/actions'
-import { formatTime, getMxTodayStr, getMxDisplayDate } from '@/lib/utils'
+import { formatTime, getMxTodayStr } from '@/lib/utils'
 
-export default async function AgendaPage() {
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function AgendaPage({ searchParams }: PageProps) {
   const supabase = await createClient()
+  const resolvedSearchParams = await searchParams
+  const dateParam = typeof resolvedSearchParams?.date === 'string' ? resolvedSearchParams.date : undefined
   
   // Fecha exacta tiempo de México
   const todayStr = getMxTodayStr()
+  const currentDateStr = dateParam || todayStr
+
+  // Calculate prev/next dates safely
+  const currentDate = new Date(currentDateStr + 'T12:00:00')
+  
+  const prevDate = new Date(currentDate)
+  prevDate.setDate(currentDate.getDate() - 1)
+  const prevDateStr = prevDate.toISOString().split('T')[0]
+  
+  const nextDate = new Date(currentDate)
+  nextDate.setDate(currentDate.getDate() + 1)
+  const nextDateStr = nextDate.toISOString().split('T')[0]
+
+  const displayDate = new Intl.DateTimeFormat('es-MX', {
+    timeZone: 'America/Mexico_City',
+    day: 'numeric',
+    month: 'short'
+  }).format(currentDate)
+
+  const isToday = currentDateStr === todayStr
 
   const { data: pedidos } = await supabase
     .from('orders')
     .select('*')
-    .eq('date', todayStr)
+    .eq('date', currentDateStr)
     .order('time', { ascending: true })
-
-  const dayLabel = getMxDisplayDate()
 
   return (
     <div className="p-4 sm:p-6 pb-24 md:pb-6">
@@ -24,25 +49,25 @@ export default async function AgendaPage() {
         
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <div className="flex bg-white rounded-lg shadow-sm border border-gray-200">
-            <button className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border-r border-gray-200 rounded-l-lg">
+            <Link href={`/dashboard/agenda?date=${currentDateStr}`} className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border-r border-gray-200 rounded-l-lg hover:bg-blue-100 transition-colors">
               Día
-            </button>
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-r-lg">
+            </Link>
+            <button className="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-50 rounded-r-lg cursor-not-allowed cursor-default" title="Próximamente">
               Semana
             </button>
           </div>
           
           <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-            <button className="p-1 hover:bg-gray-100 rounded">
+            <Link href={`/dashboard/agenda?date=${prevDateStr}`} className="p-1 hover:bg-gray-100 rounded transition-colors flex items-center justify-center">
               <ChevronLeft size={20} className="text-gray-600" />
-            </button>
-            <div className="flex items-center gap-2 px-2 font-medium text-gray-700">
+            </Link>
+            <div className="flex items-center gap-2 px-2 font-medium text-gray-700 min-w-[120px] justify-center">
               <CalendarIcon size={18} />
-              <span>Hoy, {dayLabel}</span>
+              <span className="capitalize">{isToday ? `Hoy, ${displayDate}` : displayDate}</span>
             </div>
-            <button className="p-1 hover:bg-gray-100 rounded">
+            <Link href={`/dashboard/agenda?date=${nextDateStr}`} className="p-1 hover:bg-gray-100 rounded transition-colors flex items-center justify-center">
               <ChevronRight size={20} className="text-gray-600" />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

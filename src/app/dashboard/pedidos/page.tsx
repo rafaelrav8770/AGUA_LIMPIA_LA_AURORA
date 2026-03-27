@@ -1,4 +1,4 @@
-import { Plus, Minus, MapPin, Calendar, Clock, Phone } from 'lucide-react'
+import { Plus, Minus, MapPin, Calendar, Clock, Phone, History } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { updateOrderStatus, deleteOrder } from './actions'
@@ -6,14 +6,22 @@ import { formatTime } from '@/lib/utils'
 
 export default async function PedidosPage() {
   const supabase = await createClient()
-  const { data: pedidos } = await supabase.from('orders').select('*').order('date', { ascending: false }).order('time', { ascending: false })
+  const { data: pedidos } = await supabase.from('orders')
+    .select('*')
+    .in('status', ['Pendiente', 'Entregado'])
+    .order('date', { ascending: false })
+    .order('time', { ascending: false })
 
   return (
     <div className="p-4 sm:p-6 pb-24 md:pb-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Pedidos</h1>
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Pedidos Activos</h1>
         
-        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+        <div className="flex flex-col sm:flex-row w-full xl:w-auto gap-3 flex-wrap">
+          <Link href="/dashboard/pedidos/historial" className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 font-bold px-4 py-3.5 sm:py-3 rounded-2xl md:rounded-xl hover:bg-gray-200 transition-colors shadow-sm active:scale-95 text-[15px]">
+            <History size={20} />
+            <span>Historial</span>
+          </Link>
           <Link href="/dashboard/egresos/nuevo" className="flex items-center justify-center gap-2 bg-red-100 text-red-700 font-bold px-4 py-3.5 sm:py-3 rounded-2xl md:rounded-xl hover:bg-red-200 transition-colors shadow-sm active:scale-95 text-[15px]">
             <Minus size={20} />
             <span>Registrar Gasto</span>
