@@ -1,6 +1,7 @@
 import { Plus, Download } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import EgresoActions from './EgresoActions'
 
 export default async function EgresosPage() {
   const supabase = await createClient()
@@ -46,10 +47,7 @@ export default async function EgresosPage() {
                   </td>
                   <td className="px-6 py-4 font-bold text-red-600">${egreso.amount}</td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-3">
-                      <button className="text-blue-600 hover:text-blue-800 font-medium">Editar</button>
-                      <button className="text-red-600 hover:text-red-800 font-medium">Borrar</button>
-                    </div>
+                    <EgresoActions id={egreso.id} />
                   </td>
                 </tr>
               ))}
