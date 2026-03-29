@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getMxTodayStr, getMxMonthStartEnd } from '@/lib/utils'
 import DatePicker from './DatePicker'
 
-export default async function ReportesPage(props: any) {
+export default async function ReportesPage(props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const supabase = await createClient()
 
   const searchParams = props?.searchParams ? await props.searchParams : {}
