@@ -5,7 +5,16 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 
-export default function EditarForm({ egreso }: { egreso: any }) {
+interface Egreso {
+  id: string | number;
+  date: string;
+  concept: string;
+  category: string;
+  amount: number;
+  notes?: string;
+}
+
+export default function EditarForm({ egreso }: { egreso: Egreso }) {
   const [date, setDate] = useState(egreso.date || '')
 
   const setToday = () => {
