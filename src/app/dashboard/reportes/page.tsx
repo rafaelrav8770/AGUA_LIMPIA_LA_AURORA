@@ -1,12 +1,17 @@
 import { BarChart3, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getMxTodayStr, getMxMonthStartEnd } from '@/lib/utils'
+import DatePicker from './DatePicker'
 
-export default async function ReportesPage() {
+export default async function ReportesPage(props: any) {
   const supabase = await createClient()
 
+  const searchParams = props?.searchParams ? await props.searchParams : {}
+  const urlDate = searchParams?.date
+
   // Fecha y fechas de mes en estricto horario México
-  const todayStr = getMxTodayStr()
+  const defaultTodayStr = getMxTodayStr()
+  const todayStr = (typeof urlDate === 'string' && urlDate) ? urlDate : defaultTodayStr
   const { firstDay, lastDay, monthName: mesNombre } = getMxMonthStartEnd()
 
   // ===== CORTE DIARIO =====
@@ -55,10 +60,11 @@ export default async function ReportesPage() {
       {/* === CORTE DIARIO === */}
       <div className="mb-10">
         <h2 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
-          📅 Corte Diario <span className="text-sm font-normal text-gray-400">({todayStr})</span>
+          📅 Corte Diario <DatePicker dateStr={todayStr} />
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+
           <div className="bg-white p-5 sm:p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center gap-3 mb-2">
               <div className="bg-green-100 p-2 rounded-lg text-green-600"><TrendingUp size={20} /></div>
