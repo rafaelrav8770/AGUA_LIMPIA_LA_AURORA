@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ConfirmFormButtonProps {
   action: (formData: FormData) => void | Promise<void>
@@ -23,20 +23,19 @@ export default function ConfirmFormButton({
 }: ConfirmFormButtonProps) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [isPending, setIsPending] = useState(false)
-  const overlayRef = useRef<HTMLDivElement>(null)
 
+  // Prevent body scroll when modal is open
   useEffect(() => {
-    if (!showConfirm) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (overlayRef.current && !overlayRef.current.contains(e.target as Node)) {
-        setShowConfirm(false)
-      }
+    if (showConfirm) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    return () => { document.body.style.overflow = '' }
   }, [showConfirm])
 
   const handleConfirm = async () => {
+    if (isPending) return
     setIsPending(true)
     try {
       const formData = new FormData()
@@ -53,35 +52,76 @@ export default function ConfirmFormButton({
     }
   }
 
-  if (showConfirm) {
-    return (
-      <div ref={overlayRef} className="relative inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl shadow-lg px-3 py-2 animate-in fade-in zoom-in-95 duration-150">
-        <span className="text-xs font-medium text-gray-600 whitespace-nowrap">{confirmMessage}</span>
-        <button
-          onClick={() => setShowConfirm(false)}
-          className="text-gray-500 hover:text-gray-700 font-bold text-xs px-2 py-1 bg-gray-100 rounded-lg transition-colors"
-          disabled={isPending}
-        >
-          {cancelLabel}
-        </button>
-        <button
-          onClick={handleConfirm}
-          disabled={isPending}
-          className="text-white hover:bg-red-700 font-bold text-xs px-2 py-1 bg-red-600 rounded-lg transition-colors disabled:opacity-50"
-        >
-          {isPending ? '...' : confirmLabel}
-        </button>
-      </div>
-    )
-  }
-
   return (
-    <button
-      type="button"
-      onClick={() => setShowConfirm(true)}
-      className={buttonClassName}
-    >
-      {buttonLabel}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          setShowConfirm(true)
+        }}
+        className={buttonClassName}
+      >
+        {buttonLabel}
+      </button>
+
+      {showConfirm && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowConfirm(false)}
+          onTouchEnd={(e) => {
+            // Only close if the tap was directly on the backdrop
+            if (e.target === e.currentTarget) {
+              setShowConfirm(false)
+            }
+          }}
+          style={{ touchAction: 'none' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-[280px] flex flex-col items-center gap-4"
+          >
+            <p className="text-lg font-semibold text-gray-800 text-center leading-snug">
+              {confirmMessage}
+            </p>
+            <div className="flex gap-3 w-full">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowConfirm(false)
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  setShowConfirm(false)
+                }}
+                className="flex-1 text-gray-600 font-bold text-base px-4 py-4 bg-gray-100 active:bg-gray-300 rounded-xl transition-colors select-none"
+                disabled={isPending}
+              >
+                {cancelLabel}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleConfirm()
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  handleConfirm()
+                }}
+                disabled={isPending}
+                className="flex-1 text-white font-bold text-base px-4 py-4 bg-red-600 active:bg-red-800 rounded-xl transition-colors select-none disabled:opacity-50"
+              >
+                {isPending ? '...' : confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
