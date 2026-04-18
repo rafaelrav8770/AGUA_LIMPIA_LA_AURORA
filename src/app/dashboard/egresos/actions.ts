@@ -27,8 +27,9 @@ export async function createExpense(formData: FormData) {
   redirect('/dashboard/egresos')
 }
 
-export async function deleteExpense(id: string | number) {
+export async function deleteExpense(formData: FormData) {
   const supabase = await createClient()
+  const id = formData.get('expenseId') as string
 
   const { error } = await supabase.from('expenses').delete().eq('id', id)
 
