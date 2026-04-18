@@ -6,11 +6,15 @@ import OrderActions from './OrderActions'
 
 export default async function PedidosPage() {
   const supabase = await createClient()
+
+  // Fecha de hoy en zona horaria de México
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
+
   const { data: pedidos } = await supabase.from('orders')
     .select('*')
     .in('status', ['Pendiente', 'Entregado'])
-    .order('date', { ascending: false })
-    .order('time', { ascending: false })
+    .eq('date', today)
+    .order('time', { ascending: true })
 
   return (
     <div className="p-4 sm:p-6 pb-24 md:pb-6">
