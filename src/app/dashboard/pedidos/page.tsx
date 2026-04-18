@@ -1,8 +1,8 @@
 import { Plus, Minus, MapPin, Calendar, Clock, Phone, History } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { updateOrderStatus, deleteOrder } from './actions'
 import { formatTime } from '@/lib/utils'
+import OrderActions from './OrderActions'
 
 export default async function PedidosPage() {
   const supabase = await createClient()
@@ -81,65 +81,7 @@ export default async function PedidosPage() {
               </div>
             </div>
 
-            <div className="pt-2 flex flex-wrap gap-2 items-center justify-between">
-              <div className="flex gap-2 w-full sm:w-auto">
-                {pedido.status === 'Pendiente' && (
-                  <div className="flex w-full gap-2">
-                    <form action={updateOrderStatus} className="flex-1">
-                      <input type="hidden" name="orderId" value={pedido.id} />
-                      <input type="hidden" name="newStatus" value="Entregado" />
-                      <input type="hidden" name="newPaymentMethod" value="Pendiente" />
-                      <button type="submit" className="w-full bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold px-2 py-2.5 rounded-xl transition-colors active:scale-95 text-xs border border-orange-200/50">
-                        Fiar
-                      </button>
-                    </form>
-                    <form action={updateOrderStatus} className="flex-1">
-                      <input type="hidden" name="orderId" value={pedido.id} />
-                      <input type="hidden" name="newStatus" value="Pagado" />
-                      <input type="hidden" name="newPaymentMethod" value="Transferencia" />
-                      <button type="submit" className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-2 py-2.5 rounded-xl transition-colors active:scale-95 text-xs border border-blue-200/50">
-                        Transf.
-                      </button>
-                    </form>
-                    <form action={updateOrderStatus} className="flex-1">
-                      <input type="hidden" name="orderId" value={pedido.id} />
-                      <input type="hidden" name="newStatus" value="Pagado" />
-                      <input type="hidden" name="newPaymentMethod" value="Efectivo" />
-                      <button type="submit" className="w-full bg-green-50 hover:bg-green-100 text-green-700 font-bold px-2 py-2.5 rounded-xl transition-colors active:scale-95 text-xs border border-green-200/50">
-                        Efectivo
-                      </button>
-                    </form>
-                  </div>
-                )}
-                {pedido.status === 'Entregado' && (
-                  <div className="flex w-full gap-2">
-                    <form action={updateOrderStatus} className="flex-1">
-                      <input type="hidden" name="orderId" value={pedido.id} />
-                      <input type="hidden" name="newStatus" value="Pagado" />
-                      <input type="hidden" name="newPaymentMethod" value="Transferencia" />
-                      <button type="submit" className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3 py-2.5 rounded-xl transition-colors active:scale-95 text-xs border border-blue-200/50">
-                        Cobro Transf.
-                      </button>
-                    </form>
-                    <form action={updateOrderStatus} className="flex-1">
-                      <input type="hidden" name="orderId" value={pedido.id} />
-                      <input type="hidden" name="newStatus" value="Pagado" />
-                      <input type="hidden" name="newPaymentMethod" value="Efectivo" />
-                      <button type="submit" className="w-full bg-green-50 hover:bg-green-100 text-green-700 font-bold px-3 py-2.5 rounded-xl transition-colors active:scale-95 text-xs border border-green-200/50">
-                        Cobro Efect.
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0 items-center">
-                <Link href={`/dashboard/pedidos/${pedido.id}/editar`} className="text-gray-500 hover:text-gray-800 font-bold px-3 py-2 text-sm transition-colors">Modificar</Link>
-                <form action={deleteOrder}>
-                  <input type="hidden" name="orderId" value={pedido.id} />
-                  <button type="submit" className="text-red-400 hover:text-red-700 font-bold px-3 py-2 text-sm transition-colors">X</button>
-                </form>
-              </div>
-            </div>
+            <OrderActions pedido={{ id: pedido.id, status: pedido.status }} />
           </div>
         ))}
         

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { updateOrderStatus } from '../pedidos/actions'
 import { Phone, MapPin } from 'lucide-react'
+import FiadoActions from './FiadoActions'
 
 interface FiadoGroup {
   client_name: string
@@ -115,24 +115,7 @@ export default async function FiadosPage() {
                   </div>
                   <div className="flex items-center gap-2 justify-between sm:justify-end">
                     <span className="font-bold text-gray-800">${order.price}</span>
-                    <div className="flex gap-2">
-                      <form action={updateOrderStatus}>
-                        <input type="hidden" name="orderId" value={order.id} />
-                        <input type="hidden" name="newStatus" value="Pagado" />
-                        <input type="hidden" name="newPaymentMethod" value="Transferencia" />
-                        <button type="submit" className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded-xl text-xs border border-blue-200/50 transition-colors active:scale-95">
-                          Transf.
-                        </button>
-                      </form>
-                      <form action={updateOrderStatus}>
-                        <input type="hidden" name="orderId" value={order.id} />
-                        <input type="hidden" name="newStatus" value="Pagado" />
-                        <input type="hidden" name="newPaymentMethod" value="Efectivo" />
-                        <button type="submit" className="bg-green-50 hover:bg-green-100 text-green-700 font-bold px-3 py-1.5 rounded-xl text-xs border border-green-200/50 transition-colors active:scale-95">
-                          Efectivo
-                        </button>
-                      </form>
-                    </div>
+                    <FiadoActions orderId={order.id} />
                   </div>
                 </div>
               ))}

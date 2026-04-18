@@ -1,8 +1,8 @@
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { deleteOrder } from '../pedidos/actions'
 import { formatTime, getMxTodayStr } from '@/lib/utils'
+import AgendaActions from './AgendaActions'
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -132,14 +132,7 @@ export default async function AgendaPage({ searchParams }: PageProps) {
                   </span>
                 </div>
               </div>
-              <div className="flex sm:ml-4 justify-end">
-                <form action={deleteOrder}>
-                  <input type="hidden" name="orderId" value={pedido.id} />
-                  <button type="submit" className="text-red-400 hover:text-red-600 font-bold text-sm px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors active:scale-95">
-                    Eliminar
-                  </button>
-                </form>
-              </div>
+              <AgendaActions pedidoId={pedido.id} />
             </div>
           ))}
           {(!pedidos || pedidos.length === 0) && (

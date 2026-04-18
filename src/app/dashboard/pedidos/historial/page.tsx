@@ -1,8 +1,8 @@
 import { Plus, Minus, MapPin, Calendar, Clock, Phone, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { updateOrderStatus, deleteOrder } from '../actions'
 import { formatTime } from '@/lib/utils'
+import HistorialActions from './HistorialActions'
 
 export default async function HistorialPedidosPage() {
   const supabase = await createClient()
@@ -77,13 +77,7 @@ export default async function HistorialPedidosPage() {
                   Método de pago: <span className="text-gray-700">{pedido.payment_method || 'No definido'}</span>
                 </span>
               </div>
-              <div className="flex gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0 items-center">
-                <Link href={`/dashboard/pedidos/${pedido.id}/editar`} className="text-gray-500 hover:text-gray-800 font-bold px-3 py-2 text-sm transition-colors">Modificar</Link>
-                <form action={deleteOrder}>
-                  <input type="hidden" name="orderId" value={pedido.id} />
-                  <button type="submit" className="text-red-400 hover:text-red-700 font-bold px-3 py-2 text-sm transition-colors">X</button>
-                </form>
-              </div>
+              <HistorialActions pedidoId={pedido.id} />
             </div>
           </div>
         ))}
