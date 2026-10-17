@@ -54,17 +54,6 @@ export function getMxNowTimeStr(): string {
 }
 
 /**
- * Obtiene nombre del día, mes, y formato para armar la UI sin depender del UTC del servidor
- */
-export function getMxDisplayDate(): string {
-  return new Intl.DateTimeFormat('es-MX', {
-    timeZone: 'America/Mexico_City',
-    day: 'numeric',
-    month: 'short'
-  }).format(new Date())
-}
-
-/**
  * Retorna 'YYYY-MM-01' y 'YYYY-MM-DD' del último día del mes actual (timeZone México)
  */
 export function getMxMonthStartEnd(): { firstDay: string; lastDay: string; monthName: string } {
