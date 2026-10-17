@@ -10,11 +10,11 @@ export default async function PedidosPage() {
   // Fecha de hoy en zona horaria de México
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
-  const { data: pedidos } = await supabase.from('orders')
+  const { data: pedidos } = await supabase.from('pedidos')
     .select('*')
-    .in('status', ['Pendiente', 'Entregado'])
-    .eq('date', today)
-    .order('time', { ascending: true })
+    .in('estado', ['Pendiente', 'Entregado'])
+    .eq('fecha', today)
+    .order('hora', { ascending: true })
 
   return (
     <div className="p-4 sm:p-6 pb-24 md:pb-6">
@@ -43,49 +43,49 @@ export default async function PedidosPage() {
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1">
                 <span className="text-xs font-bold text-gray-400 mb-1 block tracking-wider uppercase">Folio #{pedido.folio}</span>
-                <h3 className="font-bold text-xl text-gray-800 leading-tight">{pedido.client_name}</h3>
+                <h3 className="font-bold text-xl text-gray-800 leading-tight">{pedido.nombre_cliente}</h3>
                 
-                {pedido.phone && (
+                {pedido.telefono && (
                   <div className="flex items-center gap-1.5 mt-2 text-gray-500 text-sm">
                     <Phone size={14} />
-                    <span>{pedido.phone}</span>
+                    <span>{pedido.telefono}</span>
                   </div>
                 )}
               </div>
               <div className="text-right flex flex-col items-end gap-2">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase shadow-sm ${
-                  pedido.status === 'Pendiente' ? 'bg-orange-100 text-orange-800 border border-orange-200/50' :
-                  pedido.status === 'Entregado' ? 'bg-blue-100 text-blue-800 border border-blue-200/50' :
-                  pedido.status === 'Pagado' ? 'bg-green-100 text-green-800 border border-green-200/50' :
+                  pedido.estado === 'Pendiente' ? 'bg-orange-100 text-orange-800 border border-orange-200/50' :
+                  pedido.estado === 'Entregado' ? 'bg-blue-100 text-blue-800 border border-blue-200/50' :
+                  pedido.estado === 'Pagado' ? 'bg-green-100 text-green-800 border border-green-200/50' :
                   'bg-gray-100 text-gray-800 border border-gray-200/50'
                 }`}>
-                  {pedido.status === 'Pendiente' ? '🟠 Pendiente' :
-                   pedido.status === 'Entregado' ? '🔵 Entregado' :
-                   pedido.status === 'Pagado' ? '🟢 Pagado' :
+                  {pedido.estado === 'Pendiente' ? '🟠 Pendiente' :
+                   pedido.estado === 'Entregado' ? '🔵 Entregado' :
+                   pedido.estado === 'Pagado' ? '🟢 Pagado' :
                    '🔴 Cancelado'}
                 </span>
-                <span className="text-2xl font-black text-gray-900">${pedido.price}</span>
+                <span className="text-2xl font-black text-gray-900">${pedido.precio}</span>
               </div>
             </div>
 
             <div className="bg-gray-50/80 rounded-2xl p-3.5 flex flex-col gap-2.5">
               <div className="flex items-start gap-2 text-sm text-gray-700">
                 <MapPin size={16} className="mt-0.5 text-blue-500 flex-shrink-0" />
-                <span className="leading-snug">{pedido.address}</span>
+                <span className="leading-snug">{pedido.direccion}</span>
               </div>
               <div className="flex justify-between items-center text-sm font-semibold text-gray-600">
                 <div className="flex items-center gap-1.5">
                   <Calendar size={14} className="text-gray-400" />
-                  <span>{pedido.date}</span>
+                  <span>{pedido.fecha}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Clock size={14} className="text-gray-400" />
-                  <span>{formatTime(pedido.time)}</span>
+                  <span>{formatTime(pedido.hora)}</span>
                 </div>
               </div>
             </div>
 
-            <OrderActions pedido={{ id: pedido.id, status: pedido.status }} />
+            <OrderActions pedido={{ id: pedido.id, estado: pedido.estado }} />
           </div>
         ))}
         

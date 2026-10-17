@@ -5,7 +5,7 @@ import EgresoActions from './EgresoActions'
 
 export default async function EgresosPage() {
   const supabase = await createClient()
-  const { data: egresos } = await supabase.from('expenses').select('*').order('date', { ascending: false })
+  const { data: egresos } = await supabase.from('egresos').select('*').order('fecha', { ascending: false })
 
   return (
     <div className="p-6">
@@ -38,14 +38,14 @@ export default async function EgresosPage() {
             <tbody>
               {egresos && egresos.map((egreso) => (
                 <tr key={egreso.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">{egreso.date}</td>
-                  <td className="px-6 py-4 font-medium text-gray-900">{egreso.concept}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{egreso.fecha}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">{egreso.concepto}</td>
                   <td className="px-6 py-4">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      {egreso.category}
+                      {egreso.categoria}
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-bold text-red-600">${egreso.amount}</td>
+                  <td className="px-6 py-4 font-bold text-red-600">${egreso.monto}</td>
                   <td className="px-6 py-4 text-right">
                     <EgresoActions id={egreso.id} />
                   </td>

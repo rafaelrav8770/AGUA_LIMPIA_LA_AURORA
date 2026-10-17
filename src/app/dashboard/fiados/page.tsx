@@ -3,15 +3,15 @@ import { Phone, MapPin } from 'lucide-react'
 import FiadoActions from './FiadoActions'
 
 interface FiadoGroup {
-  client_name: string
-  phone: string | null
+  nombre_cliente: string
+  telefono: string | null
   total: number
   orders: {
     id: string
     folio: number
-    address: string
-    date: string
-    price: number
+    direccion: string
+    fecha: string
+    precio: number
   }[]
 }
 
@@ -20,33 +20,33 @@ export default async function FiadosPage() {
 
   // Traer todos los pedidos que están "Entregados" (fiados - entregados pero no pagados)
   const { data: fiadoOrders } = await supabase
-    .from('orders')
+    .from('pedidos')
     .select('*')
-    .eq('status', 'Entregado')
-    .order('date', { ascending: false })
+    .eq('estado', 'Entregado')
+    .order('fecha', { ascending: false })
 
   // Agrupar por nombre + teléfono
   const groups: FiadoGroup[] = []
   if (fiadoOrders) {
     const map = new Map<string, FiadoGroup>()
     for (const order of fiadoOrders) {
-      const key = `${(order.client_name || '').toLowerCase().trim()}|${(order.phone || '').trim()}`
+      const key = `${(order.nombre_cliente || '').toLowerCase().trim()}|${(order.telefono || '').trim()}`
       if (!map.has(key)) {
         map.set(key, {
-          client_name: order.client_name,
-          phone: order.phone,
+          nombre_cliente: order.nombre_cliente,
+          telefono: order.telefono,
           total: 0,
           orders: [],
         })
       }
       const group = map.get(key)!
-      group.total += order.price
+      group.total += order.precio
       group.orders.push({
         id: order.id,
         folio: order.folio,
-        address: order.address,
-        date: order.date,
-        price: order.price,
+        direccion: order.direccion,
+        fecha: order.fecha,
+        precio: order.precio,
       })
     }
     groups.push(...Array.from(map.values()).sort((a, b) => b.total - a.total))
@@ -82,11 +82,11 @@ export default async function FiadosPage() {
             <div className="bg-red-50/50 p-5 border-b border-red-100/50">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-bold text-lg text-gray-900">{group.client_name}</h3>
-                  {group.phone && (
+                  <h3 className="font-bold text-lg text-gray-900">{group.nombre_cliente}</h3>
+                  {group.telefono && (
                     <div className="flex items-center gap-1.5 mt-1 text-gray-500 text-sm">
                       <Phone size={14} />
-                      <span>{group.phone}</span>
+                      <span>{group.telefono}</span>
                     </div>
                   )}
                 </div>
@@ -106,15 +106,15 @@ export default async function FiadosPage() {
                     <div className="flex items-center gap-2 text-sm">
                       <span className="font-bold text-gray-400">#{order.folio}</span>
                       <span className="text-gray-300">•</span>
-                      <span className="text-gray-500">{order.date}</span>
+                      <span className="text-gray-500">{order.fecha}</span>
                     </div>
                     <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-600">
                       <MapPin size={13} className="text-gray-400 flex-shrink-0" />
-                      <span className="truncate">{order.address}</span>
+                      <span className="truncate">{order.direccion}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 justify-between sm:justify-end">
-                    <span className="font-bold text-gray-800">${order.price}</span>
+                    <span className="font-bold text-gray-800">${order.precio}</span>
                     <FiadoActions orderId={order.id} />
                   </div>
                 </div>
