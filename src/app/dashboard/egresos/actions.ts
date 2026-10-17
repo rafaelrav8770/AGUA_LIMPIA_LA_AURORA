@@ -8,14 +8,14 @@ export async function createExpense(formData: FormData) {
   const supabase = await createClient()
 
   const data = {
-    date: formData.get('date') as string,
-    concept: formData.get('concept') as string,
-    category: formData.get('category') as string,
-    amount: parseFloat(formData.get('amount') as string),
-    notes: formData.get('notes') as string,
+    fecha: formData.get('date') as string,
+    concepto: formData.get('concept') as string,
+    categoria: formData.get('category') as string,
+    monto: parseFloat(formData.get('amount') as string),
+    notas: formData.get('notes') as string,
   }
 
-  const { error } = await supabase.from('expenses').insert(data)
+  const { error } = await supabase.from('egresos').insert(data)
 
   if (error) {
     console.error('Error creating expense:', error)
@@ -31,7 +31,7 @@ export async function deleteExpense(formData: FormData) {
   const supabase = await createClient()
   const id = formData.get('expenseId') as string
 
-  const { error } = await supabase.from('expenses').delete().eq('id', id)
+  const { error } = await supabase.from('egresos').delete().eq('id', id)
 
   if (error) {
     console.error('Error deleting expense:', error)
@@ -48,14 +48,14 @@ export async function updateExpense(formData: FormData) {
   const id = formData.get('id') as string
 
   const data = {
-    date: formData.get('date') as string,
-    concept: formData.get('concept') as string,
-    category: formData.get('category') as string,
-    amount: parseFloat(formData.get('amount') as string),
-    notes: formData.get('notes') as string,
+    fecha: formData.get('date') as string,
+    concepto: formData.get('concept') as string,
+    categoria: formData.get('category') as string,
+    monto: parseFloat(formData.get('amount') as string),
+    notas: formData.get('notes') as string,
   }
 
-  const { error } = await supabase.from('expenses').update(data).eq('id', id)
+  const { error } = await supabase.from('egresos').update(data).eq('id', id)
 
   if (error) {
     console.error('Error updating expense:', error)

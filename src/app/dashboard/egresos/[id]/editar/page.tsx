@@ -7,7 +7,7 @@ export default async function EditarEgresoPage({ params }: { params: { id: strin
   const { id } = await params
 
   const { data: egreso } = await supabase
-    .from('expenses')
+    .from('egresos')
     .select('*')
     .eq('id', id)
     .single()

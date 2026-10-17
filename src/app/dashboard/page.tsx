@@ -13,10 +13,10 @@ export default async function DashboardPage() {
 
   // Todas las consultas en paralelo para mayor velocidad
   const [pedidosRes, egresosRes, fiadosRes, proximoRes] = await Promise.all([
-    supabase.from('orders').select('id,price,status').eq('date', todayStr),
-    supabase.from('expenses').select('id,amount').eq('date', todayStr),
-    supabase.from('orders').select('id,client_name,address,date,price').eq('status', 'Entregado').order('date', { ascending: false }).limit(5),
-    supabase.from('orders').select('id,client_name,address,time,price').eq('date', todayStr).eq('status', 'Pendiente').gte('time', nowTime).order('time', { ascending: true }).limit(1),
+    supabase.from('pedidos').select('id,precio,estado').eq('fecha', todayStr),
+    supabase.from('egresos').select('id,monto').eq('fecha', todayStr),
+    supabase.from('pedidos').select('id,nombre_cliente,direccion,fecha,precio').eq('estado', 'Entregado').order('fecha', { ascending: false }).limit(5),
+    supabase.from('pedidos').select('id,nombre_cliente,direccion,hora,precio').eq('fecha', todayStr).eq('estado', 'Pendiente').gte('hora', nowTime).order('hora', { ascending: true }).limit(1),
   ])
 
   const pedidosHoy = pedidosRes.data
@@ -26,10 +26,10 @@ export default async function DashboardPage() {
 
   // Calcular totales
   const totalPedidos = pedidosHoy?.length || 0
-  const ingresos = pedidosHoy?.filter(p => p.status === 'Pagado').reduce((sum, p) => sum + p.price, 0) || 0
-  const egresos = egresosHoy?.reduce((sum, e) => sum + e.amount, 0) || 0
+  const ingresos = pedidosHoy?.filter(p => p.estado === 'Pagado').reduce((sum, p) => sum + p.precio, 0) || 0
+  const egresos = egresosHoy?.reduce((sum, e) => sum + e.monto, 0) || 0
   const ganancia = ingresos - egresos
-  const totalFiados = fiados?.reduce((sum, f) => sum + f.price, 0) || 0
+  const totalFiados = fiados?.reduce((sum, f) => sum + f.precio, 0) || 0
 
   return (
     <div className="p-4 sm:p-6 pb-24 md:pb-6">
@@ -96,10 +96,10 @@ export default async function DashboardPage() {
             {fiados && fiados.length > 0 ? fiados.map((f) => (
               <div key={f.id} className="flex justify-between items-center pb-3 border-b border-gray-50 last:border-0">
                 <div>
-                  <p className="font-medium text-gray-800">{f.client_name}</p>
-                  <p className="text-xs text-gray-400">{f.address} • {f.date}</p>
+                  <p className="font-medium text-gray-800">{f.nombre_cliente}</p>
+                  <p className="text-xs text-gray-400">{f.direccion} • {f.fecha}</p>
                 </div>
-                <p className="font-bold text-orange-600">${f.price}</p>
+                <p className="font-bold text-orange-600">${f.precio}</p>
               </div>
             )) : (
               <p className="text-sm text-gray-400 text-center py-4">✅ Sin fiados pendientes</p>
@@ -122,12 +122,12 @@ export default async function DashboardPage() {
           {proximo ? (
             <Link href="/dashboard/pedidos" className="flex justify-between items-center bg-blue-50 p-4 rounded-lg hover:bg-blue-100 transition-colors">
               <div>
-                <p className="font-bold text-blue-800 text-lg">{formatTime(proximo.time)}</p>
-                <p className="font-medium text-blue-700">{proximo.client_name}</p>
-                <p className="text-sm text-blue-600">{proximo.address}</p>
+                <p className="font-bold text-blue-800 text-lg">{formatTime(proximo.hora)}</p>
+                <p className="font-medium text-blue-700">{proximo.nombre_cliente}</p>
+                <p className="text-sm text-blue-600">{proximo.direccion}</p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-blue-800">${proximo.price}</p>
+                <p className="font-bold text-blue-800">${proximo.precio}</p>
               </div>
             </Link>
           ) : (

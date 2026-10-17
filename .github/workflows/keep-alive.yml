@@ -20,9 +20,9 @@ jobs:
             exit 1
           fi
           
-          echo "Haciendo Ping a $SUPABASE_URL/rest/v1/orders?select=id&limit=1"
+          echo "Haciendo Ping a $SUPABASE_URL/rest/v1/pedidos?select=id&limit=1"
           
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${SUPABASE_URL}/rest/v1/orders?select=id&limit=1" \
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${SUPABASE_URL}/rest/v1/pedidos?select=id&limit=1" \
             -H "apikey: ${SUPABASE_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_KEY}")
             

@@ -49,15 +49,15 @@ export default async function AgendaPage({ searchParams }: PageProps) {
 
   const isToday = currentDateStr === todayStr
 
-  let query = supabase.from('orders').select('*')
+  let query = supabase.from('pedidos').select('*')
   
   if (isWeekView) {
-    query = query.gte('date', currentDateStr).lte('date', endDateStr)
-      .order('date', { ascending: true })
-      .order('time', { ascending: true })
+    query = query.gte('fecha', currentDateStr).lte('fecha', endDateStr)
+      .order('fecha', { ascending: true })
+      .order('hora', { ascending: true })
   } else {
-    query = query.eq('date', currentDateStr)
-      .order('time', { ascending: true })
+    query = query.eq('fecha', currentDateStr)
+      .order('hora', { ascending: true })
   }
 
   const { data: pedidos } = await query
@@ -109,26 +109,26 @@ export default async function AgendaPage({ searchParams }: PageProps) {
           {pedidos && pedidos.map((pedido) => (
             <div key={pedido.id} className="flex flex-col sm:flex-row sm:items-center p-4 hover:bg-gray-50 transition-colors gap-3 sm:gap-0">
               <div className="w-full sm:w-32 font-bold text-gray-700 text-sm sm:text-base flex flex-col justify-center sm:block">
-                {isWeekView && <span className="text-xs text-blue-600 font-bold uppercase block mb-0.5">{formatDateLabel(pedido.date)}</span>}
-                <span>{formatTime(pedido.time)}</span>
+                {isWeekView && <span className="text-xs text-blue-600 font-bold uppercase block mb-0.5">{formatDateLabel(pedido.fecha)}</span>}
+                <span>{formatTime(pedido.hora)}</span>
               </div>
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
                 <div>
-                  <p className="font-medium text-gray-900">{pedido.client_name}</p>
-                  {pedido.phone && <p className="text-xs text-gray-400">{pedido.phone}</p>}
+                  <p className="font-medium text-gray-900">{pedido.nombre_cliente}</p>
+                  {pedido.telefono && <p className="text-xs text-gray-400">{pedido.telefono}</p>}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">{pedido.address}</p>
+                  <p className="text-sm text-gray-500">{pedido.direccion}</p>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-3">
-                  <p className="font-medium text-gray-900">${pedido.price}</p>
+                  <p className="font-medium text-gray-900">${pedido.precio}</p>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    pedido.status === 'Entregado' ? 'bg-blue-100 text-blue-800' :
-                    pedido.status === 'Pagado' ? 'bg-green-100 text-green-800' :
-                    pedido.status === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' :
+                    pedido.estado === 'Entregado' ? 'bg-blue-100 text-blue-800' :
+                    pedido.estado === 'Pagado' ? 'bg-green-100 text-green-800' :
+                    pedido.estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
-                    {pedido.status}
+                    {pedido.estado}
                   </span>
                 </div>
               </div>

@@ -7,7 +7,7 @@ import Link from 'next/link'
 interface OrderActionsProps {
   pedido: {
     id: string
-    status: string
+    estado: string
   }
 }
 
@@ -15,7 +15,7 @@ export default function OrderActions({ pedido }: OrderActionsProps) {
   return (
     <div className="pt-2 flex flex-wrap gap-2 items-center justify-between">
       <div className="flex gap-2 w-full sm:w-auto">
-        {pedido.status === 'Pendiente' && (
+        {pedido.estado === 'Pendiente' && (
           <div className="flex w-full gap-2">
             <ConfirmFormButton
               action={updateOrderStatus}
@@ -40,7 +40,7 @@ export default function OrderActions({ pedido }: OrderActionsProps) {
             />
           </div>
         )}
-        {pedido.status === 'Entregado' && (
+        {pedido.estado === 'Entregado' && (
           <div className="flex w-full gap-2">
             <ConfirmFormButton
               action={updateOrderStatus}

@@ -9,18 +9,18 @@ export async function createOrder(formData: FormData) {
   const supabase = await createClient()
 
   const data = {
-    client_name: formData.get('client_name') as string,
-    phone: formData.get('phone') as string,
-    address: formData.get('address') as string,
-    date: formData.get('date') as string,
-    time: formData.get('time') as string,
-    price: parseFloat(formData.get('price') as string),
-    payment_method: formData.get('payment_method') as PaymentMethod,
-    status: formData.get('status') as OrderStatus,
-    notes: formData.get('notes') as string,
+    nombre_cliente: formData.get('client_name') as string,
+    telefono: formData.get('phone') as string,
+    direccion: formData.get('address') as string,
+    fecha: formData.get('date') as string,
+    hora: formData.get('time') as string,
+    precio: parseFloat(formData.get('price') as string),
+    metodo_pago: formData.get('payment_method') as PaymentMethod,
+    estado: formData.get('status') as OrderStatus,
+    notas: formData.get('notes') as string,
   }
 
-  const { error } = await supabase.from('orders').insert(data)
+  const { error } = await supabase.from('pedidos').insert(data)
 
   if (error) {
     console.error('Error creating order:', error)
@@ -38,13 +38,13 @@ export async function updateOrderStatus(formData: FormData) {
   const newStatus = formData.get('newStatus') as OrderStatus
   const newPaymentMethod = formData.get('newPaymentMethod') as PaymentMethod | null
 
-  const updateData: { status: OrderStatus; payment_method?: PaymentMethod } = { status: newStatus }
+  const updateData: { estado: OrderStatus; metodo_pago?: PaymentMethod } = { estado: newStatus }
   if (newPaymentMethod) {
-    updateData.payment_method = newPaymentMethod
+    updateData.metodo_pago = newPaymentMethod
   }
 
   const { error } = await supabase
-    .from('orders')
+    .from('pedidos')
     .update(updateData)
     .eq('id', orderId)
 
@@ -62,19 +62,19 @@ export async function updateOrder(formData: FormData) {
   const orderId = formData.get('orderId') as string
   
   const data = {
-    client_name: formData.get('client_name') as string,
-    phone: formData.get('phone') as string,
-    address: formData.get('address') as string,
-    date: formData.get('date') as string,
-    time: formData.get('time') as string,
-    price: parseFloat(formData.get('price') as string),
-    payment_method: formData.get('payment_method') as PaymentMethod,
-    status: formData.get('status') as OrderStatus,
-    notes: formData.get('notes') as string,
+    nombre_cliente: formData.get('client_name') as string,
+    telefono: formData.get('phone') as string,
+    direccion: formData.get('address') as string,
+    fecha: formData.get('date') as string,
+    hora: formData.get('time') as string,
+    precio: parseFloat(formData.get('price') as string),
+    metodo_pago: formData.get('payment_method') as PaymentMethod,
+    estado: formData.get('status') as OrderStatus,
+    notas: formData.get('notes') as string,
   }
 
   const { error } = await supabase
-    .from('orders')
+    .from('pedidos')
     .update(data)
     .eq('id', orderId)
 
@@ -92,7 +92,7 @@ export async function deleteOrder(formData: FormData) {
   const orderId = formData.get('orderId') as string
 
   const { error } = await supabase
-    .from('orders')
+    .from('pedidos')
     .delete()
     .eq('id', orderId)
 
@@ -107,10 +107,10 @@ export async function deleteOrder(formData: FormData) {
 export async function getOccupiedTimes(date: string): Promise<string[]> {
   const supabase = await createClient()
   const { data } = await supabase
-    .from('orders')
-    .select('time')
-    .eq('date', date)
-    .not('status', 'eq', 'Cancelado')
+    .from('pedidos')
+    .select('hora')
+    .eq('fecha', date)
+    .not('estado', 'eq', 'Cancelado')
 
-  return (data || []).map((o) => o.time?.substring(0, 5)).filter(Boolean) as string[]
+  return (data || []).map((o) => o.hora?.substring(0, 5)).filter(Boolean) as string[]
 }

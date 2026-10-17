@@ -6,11 +6,11 @@ import { Bell, BellRing, X } from 'lucide-react'
 
 interface PendingOrder {
   id: string
-  client_name: string
-  address: string
-  time: string
-  date: string
-  price: number
+  nombre_cliente: string
+  direccion: string
+  hora: string
+  fecha: string
+  precio: number
 }
 
 function playAlertSound() {
@@ -55,10 +55,10 @@ export function OrderReminder() {
     const todayStr = localDate.toISOString().split('T')[0]
 
     const { data: orders } = await supabase
-      .from('orders')
+      .from('pedidos')
       .select('*')
-      .eq('date', todayStr)
-      .eq('status', 'Pendiente')
+      .eq('fecha', todayStr)
+      .eq('estado', 'Pendiente')
 
     if (!orders) return
 
@@ -66,7 +66,7 @@ export function OrderReminder() {
 
     for (const order of orders) {
       // Parsear la hora del pedido
-      const timeParts = order.time?.substring(0, 5).split(':')
+      const timeParts = order.hora?.substring(0, 5).split(':')
       if (!timeParts || timeParts.length < 2) continue
 
       const orderHour = parseInt(timeParts[0], 10)
@@ -82,11 +82,11 @@ export function OrderReminder() {
       if (diffMin > 0 && diffMin <= 30) {
         upcoming.push({
           id: order.id,
-          client_name: order.client_name,
-          address: order.address,
-          time: order.time,
-          date: order.date,
-          price: order.price,
+          nombre_cliente: order.nombre_cliente,
+          direccion: order.direccion,
+          hora: order.hora,
+          fecha: order.fecha,
+          precio: order.precio,
         })
 
         // Sonar solo la primera vez que detecta este pedido
@@ -97,7 +97,7 @@ export function OrderReminder() {
           // Notificación del navegador si tiene permiso
           if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('🚰 Pedido en 30 min', {
-              body: `${order.client_name} - ${order.address} a las ${order.time?.substring(0, 5)}`,
+              body: `${order.nombre_cliente} - ${order.direccion} a las ${order.hora?.substring(0, 5)}`,
               icon: '/icon.svg',
             })
           }
@@ -144,11 +144,11 @@ export function OrderReminder() {
             </div>
             <div>
               <p className="font-bold text-sm">⏰ Pedido en menos de 30 min</p>
-              <p className="font-bold text-lg mt-1">{alert.client_name}</p>
-              <p className="text-orange-100 text-sm">{alert.address}</p>
+              <p className="font-bold text-lg mt-1">{alert.nombre_cliente}</p>
+              <p className="text-orange-100 text-sm">{alert.direccion}</p>
               <div className="flex justify-between items-center mt-2">
-                <span className="font-bold">{alert.time?.substring(0, 5)}</span>
-                <span className="font-bold">${alert.price}</span>
+                <span className="font-bold">{alert.hora?.substring(0, 5)}</span>
+                <span className="font-bold">${alert.precio}</span>
               </div>
             </div>
           </div>

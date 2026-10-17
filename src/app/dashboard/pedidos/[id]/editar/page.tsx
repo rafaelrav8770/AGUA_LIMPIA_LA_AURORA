@@ -11,7 +11,7 @@ export default async function EditarPedidoPage({ params }: { params: Promise<{ i
   const supabase = await createClient()
   
   const { data: pedido, error } = await supabase
-    .from('orders')
+    .from('pedidos')
     .select('*')
     .eq('id', id)
     .single()
@@ -35,23 +35,23 @@ export default async function EditarPedidoPage({ params }: { params: Promise<{ i
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1">Nombre del Cliente</label>
-              <input type="text" name="client_name" defaultValue={pedido.client_name} required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" />
+              <input type="text" name="client_name" defaultValue={pedido.nombre_cliente} required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1">Teléfono</label>
-              <input type="tel" name="phone" defaultValue={pedido.phone || ''} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" />
+              <input type="tel" name="phone" defaultValue={pedido.telefono || ''} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" />
             </div>
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700 ml-1">Ubicación</label>
-              <input type="text" name="address" defaultValue={pedido.address} required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" />
+              <input type="text" name="address" defaultValue={pedido.direccion} required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1">Fecha</label>
-              <input type="date" name="date" defaultValue={pedido.date} required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-800" />
+              <input type="date" name="date" defaultValue={pedido.fecha} required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-800" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1 block">Hora</label>
-              <select name="time" defaultValue={pedido.time.substring(0,5)} required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900">
+              <select name="time" defaultValue={pedido.hora.substring(0,5)} required className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900">
                 {TIME_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
@@ -61,12 +61,12 @@ export default async function EditarPedidoPage({ params }: { params: Promise<{ i
               <label className="text-sm font-semibold text-gray-700 ml-1 block">Precio</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
-                <input type="number" step="0.01" name="price" defaultValue={pedido.price} required className="w-full rounded-2xl border border-gray-200 pl-8 pr-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" />
+                <input type="number" step="0.01" name="price" defaultValue={pedido.precio} required className="w-full rounded-2xl border border-gray-200 pl-8 pr-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900" />
               </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1 block">Método de Pago</label>
-              <select name="payment_method" defaultValue={pedido.payment_method} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900">
+              <select name="payment_method" defaultValue={pedido.metodo_pago} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900">
                 <option value="Pendiente">⏳ Pendiente</option>
                 <option value="Efectivo">💵 Efectivo</option>
                 <option value="Transferencia">💳 Transferencia</option>
@@ -74,7 +74,7 @@ export default async function EditarPedidoPage({ params }: { params: Promise<{ i
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 ml-1 block">Estado</label>
-              <select name="status" defaultValue={pedido.status} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900">
+              <select name="status" defaultValue={pedido.estado} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-gray-900">
                 <option value="Pendiente">🟠 Pendiente</option>
                 <option value="Entregado">🔵 Entregado</option>
                 <option value="Pagado">🟢 Pagado</option>
@@ -83,7 +83,7 @@ export default async function EditarPedidoPage({ params }: { params: Promise<{ i
             </div>
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700 ml-1 block">Notas Adicionales</label>
-              <textarea name="notes" defaultValue={pedido.notes || ''} rows={3} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all resize-none font-medium text-gray-900"></textarea>
+              <textarea name="notes" defaultValue={pedido.notas || ''} rows={3} className="w-full rounded-2xl border border-gray-200 px-4 py-3.5 sm:py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all resize-none font-medium text-gray-900"></textarea>
             </div>
           </div>
 

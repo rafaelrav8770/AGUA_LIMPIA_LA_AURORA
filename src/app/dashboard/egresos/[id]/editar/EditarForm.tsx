@@ -7,15 +7,15 @@ import { useState } from 'react'
 
 interface Egreso {
   id: string | number;
-  date: string;
-  concept: string;
-  category: string;
-  amount: number;
-  notes?: string;
+  fecha: string;
+  concepto: string;
+  categoria: string;
+  monto: number;
+  notas?: string;
 }
 
 export default function EditarForm({ egreso }: { egreso: Egreso }) {
-  const [date, setDate] = useState(egreso.date || '')
+  const [date, setDate] = useState(egreso.fecha || '')
 
   const setToday = () => {
     const today = new Date()
@@ -50,12 +50,12 @@ export default function EditarForm({ egreso }: { egreso: Egreso }) {
 
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-medium text-gray-700">Concepto</label>
-              <input type="text" name="concept" required defaultValue={egreso.concept} placeholder="Ej: Gasolina, Mantenimiento..." className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input type="text" name="concept" required defaultValue={egreso.concepto} placeholder="Ej: Gasolina, Mantenimiento..." className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Categoría</label>
-              <select name="category" required defaultValue={egreso.category} className="w-full rounded-md border border-gray-300 px-3 py-2 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <select name="category" required defaultValue={egreso.categoria} className="w-full rounded-md border border-gray-300 px-3 py-2 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option value="Combustible">Combustible</option>
                 <option value="Mantenimiento">Mantenimiento</option>
                 <option value="Nómina">Nómina</option>
@@ -67,12 +67,12 @@ export default function EditarForm({ egreso }: { egreso: Egreso }) {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Monto</label>
-              <input type="number" step="0.01" name="amount" min="0" required defaultValue={egreso.amount} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input type="number" step="0.01" name="amount" min="0" required defaultValue={egreso.monto} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
 
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-medium text-gray-700">Notas Adicionales</label>
-              <textarea name="notes" rows={3} defaultValue={egreso.notes} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+              <textarea name="notes" rows={3} defaultValue={egreso.notas} className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
             </div>
           </div>
 

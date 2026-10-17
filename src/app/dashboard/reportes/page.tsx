@@ -15,15 +15,15 @@ export default async function ReportesPage(props: { searchParams?: Promise<{ [ke
   const { firstDay, lastDay, monthName: mesNombre } = getMxMonthStartEnd()
 
   // ===== CORTE DIARIO =====
-  const { data: pedidosHoy } = await supabase.from('orders').select('*').eq('date', todayStr)
-  const { data: egresosHoy } = await supabase.from('expenses').select('*').eq('date', todayStr)
+  const { data: pedidosHoy } = await supabase.from('pedidos').select('*').eq('fecha', todayStr)
+  const { data: egresosHoy } = await supabase.from('egresos').select('*').eq('fecha', todayStr)
 
-  const cobradosHoy = pedidosHoy?.filter(p => p.status === 'Pagado').reduce((s, p) => s + p.price, 0) || 0
-  const fiadosHoy = pedidosHoy?.filter(p => p.status === 'Entregado').reduce((s, p) => s + p.price, 0) || 0
-  const canceladosHoy = pedidosHoy?.filter(p => p.status === 'Cancelado').reduce((s, p) => s + p.price, 0) || 0
+  const cobradosHoy = pedidosHoy?.filter(p => p.estado === 'Pagado').reduce((s, p) => s + p.precio, 0) || 0
+  const fiadosHoy = pedidosHoy?.filter(p => p.estado === 'Entregado').reduce((s, p) => s + p.precio, 0) || 0
+  const canceladosHoy = pedidosHoy?.filter(p => p.estado === 'Cancelado').reduce((s, p) => s + p.precio, 0) || 0
   const totalIngresosHoy = cobradosHoy
-  const pedidosCobradosCount = pedidosHoy?.filter(p => p.status === 'Pagado').length || 0
-  const totalEgresosHoy = egresosHoy?.reduce((s, e) => s + e.amount, 0) || 0
+  const pedidosCobradosCount = pedidosHoy?.filter(p => p.estado === 'Pagado').length || 0
+  const totalEgresosHoy = egresosHoy?.reduce((s, e) => s + e.monto, 0) || 0
   const egresosCount = egresosHoy?.length || 0
   const utilidadHoy = totalIngresosHoy - totalEgresosHoy
   const margenHoy = totalIngresosHoy > 0 ? ((utilidadHoy / totalIngresosHoy) * 100).toFixed(1) : '0.0'
@@ -31,24 +31,24 @@ export default async function ReportesPage(props: { searchParams?: Promise<{ [ke
   // Desglose de egresos por categoría (hoy)
   const egresoCategorias: Record<string, number> = {}
   egresosHoy?.forEach(e => {
-    const cat = e.category || 'Otros'
-    egresoCategorias[cat] = (egresoCategorias[cat] || 0) + e.amount
+    const cat = e.categoria || 'Otros'
+    egresoCategorias[cat] = (egresoCategorias[cat] || 0) + e.monto
   })
 
   // ===== RESUMEN MENSUAL =====
-  const { data: pedidosMes } = await supabase.from('orders').select('*').gte('date', firstDay).lte('date', lastDay)
-  const { data: egresosMes } = await supabase.from('expenses').select('*').gte('date', firstDay).lte('date', lastDay)
+  const { data: pedidosMes } = await supabase.from('pedidos').select('*').gte('fecha', firstDay).lte('fecha', lastDay)
+  const { data: egresosMes } = await supabase.from('egresos').select('*').gte('fecha', firstDay).lte('fecha', lastDay)
 
-  const cobradosMes = pedidosMes?.filter(p => p.status === 'Pagado').reduce((s, p) => s + p.price, 0) || 0
-  const fiadosMes = pedidosMes?.filter(p => p.status === 'Entregado').reduce((s, p) => s + p.price, 0) || 0
-  const totalEgresosMes = egresosMes?.reduce((s, e) => s + e.amount, 0) || 0
+  const cobradosMes = pedidosMes?.filter(p => p.estado === 'Pagado').reduce((s, p) => s + p.precio, 0) || 0
+  const fiadosMes = pedidosMes?.filter(p => p.estado === 'Entregado').reduce((s, p) => s + p.precio, 0) || 0
+  const totalEgresosMes = egresosMes?.reduce((s, e) => s + e.monto, 0) || 0
   const utilidadMes = cobradosMes - totalEgresosMes
   const totalPedidosMes = pedidosMes?.length || 0
 
   const egresoCategMes: Record<string, number> = {}
   egresosMes?.forEach(e => {
-    const cat = e.category || 'Otros'
-    egresoCategMes[cat] = (egresoCategMes[cat] || 0) + e.amount
+    const cat = e.categoria || 'Otros'
+    egresoCategMes[cat] = (egresoCategMes[cat] || 0) + e.monto
   })
 
   const categoryColors = ['bg-blue-500', 'bg-orange-500', 'bg-green-500', 'bg-red-500', 'bg-purple-500', 'bg-yellow-500']
